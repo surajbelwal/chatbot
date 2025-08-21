@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ShockBot</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <h1>ShockBot: Adonitec Shock Absorber Selector</h1>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage();">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="restart()">Restart</button>
+    </div>
+    <script>
+        function appendMessage(sender, message) {
+            const chatBox = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = sender.toLowerCase();
+            div.textContent = `${sender}: ${message}`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input').value.trim();
+            if (!input) return;
+            appendMessage('User', input);
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: input })
+                });
+                const data = await response.json();
+                appendMessage('Bot', data.response);
+            } catch (error) {
+                appendMessage('Bot', 'Error: Unable to process request.');
+            }
+            document.getElementById('user-input').value = '';
+        }
+
+        async function restart() {
+            appendMessage('User', 'restart');
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'restart' })
+                });
+                const data = await response.json();
+                appendMessage('Bot', data.response);
+            } catch (error) {
+                appendMessage('Bot', 'Error: Unable to restart.');
+            }
+        }
+
+        window.onload = function() {
+            appendMessage('Bot', 'Choose a scenario: 1. Mass with Propelling Force');
+        };
+    </script>
+</body>
+</html>
